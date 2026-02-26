@@ -1,0 +1,13 @@
+{
+  "user_id":       "usr_4821",
+  "event_type":    "order_shipped",
+  "title":         "Your order has shipped!",
+  "message":       "Order #9923 dispatched via FedEx. ETA: Feb 27.",
+  "source":        "order-service",
+  "priority_hint": "MEDIUM",
+  "channel":       "push",
+  "timestamp":     "2025-02-26T14:32:00Z",
+  "dedupe_key":    "order_9923_shipped",
+  "expires_at":    "2025-02-28T14:32:00Z",
+  "metadata":      { "order_id": "9923", "carrier": "FedEx" }
+}
