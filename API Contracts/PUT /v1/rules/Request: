@@ -1,0 +1,10 @@
+{
+  "name": "promo_suppress_evenings",
+  "scope": "global",
+  "conditions": {
+    "event_type": ["promotion", "newsletter"],
+    "time_window": { "start": "18:00", "end": "23:59" }
+  },
+  "action": "FORCE_NEVER",
+  "priority": 50
+}
