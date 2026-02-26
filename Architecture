@@ -1,0 +1,42 @@
+┌──────────────────────────────────────────────────────────────────────┐
+│                        INGESTION LAYER                               │
+│                                                                      │
+│   Client / Service  ──►  API Gateway  ──►  Schema Validator          │
+│                               │                                      │
+│                          event_id assigned                           │
+└───────────────────────────────┼──────────────────────────────────────┘
+                                │
+                                ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                       DECISION PIPELINE                              │
+│                                                                      │
+│  ┌─────────────┐   ┌──────────────┐   ┌───────────────────────┐      │
+│  │ Rules Engine│──►│  Dedup       │──►│  Fatigue & Quota Mgr  │      │
+│  │  (OPA/DSL)  │   │  Service     │   │  (Redis sliding win.) │      │
+│  └──────┬──────┘   └──────┬───────┘   └──────────┬────────────┘      │
+│         │ short-circuit?  │ exact/near-dup?       │ cap/cooldown?    │
+│         ▼                 ▼                       ▼                  │
+│  ┌──────────────────────────────────────────────────────┐            │
+│  │              AI Scoring Service (optional)           │            │
+│  │   urgency_score · relevance_score · composite P      │            │
+│  │   (circuit-breaker protected; async for borderline)  │            │
+│  └──────────────────────┬───────────────────────────────┘            │
+│                         │                                            │
+│                         ▼                                            │
+│              ┌─────────────────────┐                                 │
+│              │  Decision           │                                 │
+│              │  Orchestrator       │◄── merges all signals           │
+│              └──────────┬──────────┘                                 │
+└─────────────────────────┼────────────────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+       [NOW]           [LATER]         [NEVER]
+          │               │               │
+    Delivery Queue   Scheduler       Audit Log only
+    (immediate)      (deliver_at)    (reason logged)
+          │               │
+          └───────┬────────┘
+                  ▼
+           Audit Log Store
+           (every decision)
