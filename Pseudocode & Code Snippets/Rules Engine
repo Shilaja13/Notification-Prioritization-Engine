@@ -1,0 +1,32 @@
+package notification.rules
+
+# CRITICAL events always go NOW
+default verdict = "LATER"
+
+verdict = "NOW" {
+    input.event_type == data.critical_event_types[_]
+}
+
+verdict = "NEVER" {
+    input.event_type == data.suppressed_event_types[_]
+}
+
+verdict = "NEVER" {
+    input.expires_at != null
+    time.now_ns() > time.parse_rfc3339_ns(input.expires_at)
+}
+
+# Custom configurable rule matching
+verdict = rule.action {
+    rule := data.rules[_]
+    rule.is_active == true
+    matches_conditions(input, rule.conditions)
+}
+
+matches_conditions(event, cond) {
+    not cond.event_type       # no event_type filter = wildcard
+}
+
+matches_conditions(event, cond) {
+    cond.event_type[_] == event.event_type
+}
