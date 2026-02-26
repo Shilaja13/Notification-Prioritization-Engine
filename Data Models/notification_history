@@ -1,0 +1,11 @@
+CREATE TABLE notification_history (
+  id          BIGSERIAL PRIMARY KEY,
+  user_id     VARCHAR(128) NOT NULL,
+  event_type  VARCHAR(64),
+  channel     VARCHAR(16),
+  sent_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  decision_id UUID REFERENCES decision_records(decision_id)
+);
+
+-- Critical for fatigue window queries
+CREATE INDEX idx_history_user_time ON notification_history (user_id, sent_at DESC);
