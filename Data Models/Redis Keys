@@ -1,0 +1,12 @@
+# Exact dedup hash
+dedup:exact:{hash}  →  "1"  (TTL: 10 min)
+
+# Near-dup embedding stored in vector DB (pgvector / Qdrant)
+# Key: user_id + event_type  |  Value: 384-dim float vector  |  TTL: 15 min
+
+# Fatigue sliding window (sorted set, score = timestamp)
+fatigue:{user_id}:push:notifs  →  sorted set of timestamps  (TTL: 24h)
+fatigue:{user_id}:daily:count  →  integer counter  (TTL: end of day)
+
+# Scheduled queue entries
+schedule:{event_id}  →  {deliver_at, channel, user_id, ...}  (TTL: expires_at)
