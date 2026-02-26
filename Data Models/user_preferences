@@ -1,0 +1,9 @@
+CREATE TABLE user_preferences (
+  user_id          VARCHAR(128) PRIMARY KEY,
+  dnd_start        TIME,              -- e.g. '22:00'
+  dnd_end          TIME,              -- e.g. '08:00'
+  channel_prefs    JSONB,             -- { "push": true, "email": false, "sms": true }
+  max_daily_notifs INT DEFAULT 20,
+  opt_out_types    TEXT[],            -- event types user has opted out of
+  updated_at       TIMESTAMPTZ DEFAULT NOW()
+);
