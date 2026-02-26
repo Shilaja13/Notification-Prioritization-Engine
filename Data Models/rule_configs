@@ -1,0 +1,12 @@
+CREATE TABLE rule_configs (
+  rule_id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        VARCHAR(128) UNIQUE NOT NULL,
+  scope       VARCHAR(32),             -- 'global' | 'user' | 'event_type'
+  conditions  JSONB NOT NULL,          -- flexible matching conditions
+  action      VARCHAR(16) NOT NULL,    -- 'FORCE_NOW' | 'FORCE_NEVER' | 'DEFER'
+  priority    INT DEFAULT 100,         -- lower = higher priority
+  version     INT DEFAULT 1,
+  is_active   BOOLEAN DEFAULT TRUE,
+  updated_by  VARCHAR(128),
+  updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
