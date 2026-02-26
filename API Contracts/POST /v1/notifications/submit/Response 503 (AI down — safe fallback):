@@ -1,0 +1,6 @@
+{
+  "event_id":    "evt_g7h8i9",
+  "verdict":     "LATER",
+  "reason_code": "FALLBACK_SAFE_DEFAULT",
+  "reason_text": "AI service unavailable; applied conservative fallback"
+}
