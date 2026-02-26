@@ -1,0 +1,15 @@
+{
+  "event_id":        "evt_a1b2c3",
+  "verdict":         "NOW",
+  "reason_code":     "RULE_FORCED_NOW",
+  "reason_text":     "Matched rule 'transactional_always_now'",
+  "rule_ids_matched":["r_transactional_now"],
+  "ai_score":        { "urgency": 0.82, "relevance": 0.76, "composite": 0.79 },
+  "pipeline_trace": [
+    { "stage": "rules_engine",  "result": "PASS",     "latency_ms": 2  },
+    { "stage": "dedup",         "result": "UNIQUE",   "latency_ms": 4  },
+    { "stage": "fatigue",       "result": "PASS",     "latency_ms": 3  },
+    { "stage": "ai_scoring",    "result": "SCORE_0.79","latency_ms": 48 }
+  ],
+  "decided_at": "2025-02-26T14:32:01Z"
+}
