@@ -1,0 +1,29 @@
+def score_notification(event: NotificationEvent) -> AIScore:
+    prompt = f"""
+    You are a notification relevance scorer.
+    Score the following notification on two dimensions (0.0 to 1.0):
+    - urgency: How time-sensitive is this? Must the user see it immediately?
+    - relevance: How likely is this to be valuable to the user?
+
+    Event type: {event.event_type}
+    Message: {event.message}
+    Priority hint: {event.priority_hint}
+    Source: {event.source}
+
+    Respond ONLY in JSON: {{"urgency": 0.0, "relevance": 0.0}}
+    """
+
+    response = llm.complete(prompt)
+    scores = json.loads(response.text)
+
+    weights = config.get("scoring_weights")  # hot-reloadable
+    composite = (
+        weights.urgency    * scores["urgency"]    +
+        weights.relevance  * scores["relevance"]
+    )
+
+    return AIScore(
+        urgency=scores["urgency"],
+        relevance=scores["relevance"],
+        composite=composite
+    )
