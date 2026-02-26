@@ -1,0 +1,7 @@
+{
+  "event_id":    "evt_d4e5f6",
+  "verdict":     "LATER",
+  "reason_code": "DND_WINDOW",
+  "reason_text": "User DND active until 08:00; scheduled for 08:05",
+  "deliver_at":  "2025-02-27T08:05:00Z"
+}
