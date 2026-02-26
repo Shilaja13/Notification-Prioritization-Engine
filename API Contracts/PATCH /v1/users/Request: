@@ -1,0 +1,7 @@
+{
+  "dnd_start": "22:00",
+  "dnd_end":   "08:00",
+  "max_daily_notifs": 15,
+  "channel_prefs": { "push": true, "email": true, "sms": false },
+  "opt_out_types": ["promotion", "newsletter"]
+}
