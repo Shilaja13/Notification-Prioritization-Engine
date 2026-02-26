@@ -1,0 +1,37 @@
+async def process_notification(event: NotificationEvent) -> Decision:
+    # L1 — Hard rules (sync, <5ms)
+    rule_result = rules_engine.evaluate(event)
+    if rule_result.short_circuits:
+        return audit_and_return(event, rule_result.verdict, rule_result.reason)
+
+    # L2 — Deduplication (sync, <10ms)
+    dedup_result = dedup_service.check(event)
+    if dedup_result.is_duplicate:
+        return audit_and_return(event, NEVER, dedup_result.reason)
+
+    # L3 — Fatigue (sync, <10ms)
+    fatigue_result = fatigue_manager.check(event)
+    if fatigue_result.suppress:
+        return audit_and_return(event, fatigue_result.verdict, fatigue_result.reason)
+
+    # L4 — AI scoring (async, timeout=120ms)
+    try:
+        ai_result = await asyncio.wait_for(
+            ai_scoring_service.score(event),
+            timeout=0.12
+        )
+        verdict = map_score_to_verdict(ai_result.composite_score)
+        return audit_and_return(event, verdict, ai_result.reason, ai_result)
+
+    except (asyncio.TimeoutError, ServiceUnavailable):
+        # L5 — Safe fallback
+        verdict = safe_fallback_verdict(event)
+        return audit_and_return(event, verdict, "FALLBACK_SAFE_DEFAULT")
+
+
+def safe_fallback_verdict(event: NotificationEvent) -> str:
+    if event.priority_hint == "CRITICAL":
+        return NOW
+    if event.priority_hint == "HIGH":
+        return NOW
+    return LATER   # conservative default; nothing is silently lost
