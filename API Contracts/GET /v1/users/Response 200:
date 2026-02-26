@@ -1,0 +1,13 @@
+{
+  "events": [
+    {
+      "event_id":   "evt_a1b2c3",
+      "event_type": "order_shipped",
+      "verdict":    "NOW",
+      "reason_text":"Matched rule 'transactional_always_now'",
+      "decided_at": "2025-02-26T14:32:01Z"
+    }
+  ],
+  "total": 142,
+  "page": 1
+}
