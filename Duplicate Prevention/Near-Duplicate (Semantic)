@@ -1,0 +1,15 @@
+embedding = embed_model.encode(message)   # 384-dim vector, ~5ms
+
+results = vector_db.query(
+    collection = "user_recent_embeddings",
+    filter     = { user_id: user_id, event_type: event_type },
+    vector     = embedding,
+    top_k      = 1,
+    time_filter= last 15 minutes
+)
+
+IF results[0].cosine_similarity > 0.92:
+    RETURN verdict=NEVER, reason_code=NEAR_DUPLICATE
+ELSE:
+    vector_db.upsert(embedding, ttl=900)   # store for future comparison
+    CONTINUE
