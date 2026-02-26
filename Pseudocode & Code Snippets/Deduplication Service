@@ -1,0 +1,34 @@
+import hashlib, json
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")   # 384-dim, ~5ms inference
+
+def normalize_message(msg: str) -> str:
+    return " ".join(msg.lower().split())
+
+def compute_hash(event) -> str:
+    key = f"{event.user_id}|{event.event_type}|{normalize_message(event.message)}|{event.dedupe_key or ''}"
+    return hashlib.sha256(key.encode()).hexdigest()
+
+def check_exact_duplicate(event, redis_client) -> bool:
+    h = compute_hash(event)
+    if redis_client.get(f"dedup:exact:{h}"):
+        return True
+    redis_client.setex(f"dedup:exact:{h}", 600, "1")
+    return False
+
+def check_near_duplicate(event, vector_db) -> bool:
+    embedding = model.encode(event.message).tolist()
+    results = vector_db.search(
+        collection="user_recent_embeds",
+        query_vector=embedding,
+        filter={"user_id": event.user_id, "event_type": event.event_type},
+        limit=1,
+        score_threshold=0.92
+    )
+    if results:
+        return True
+    vector_db.upsert(id=event.event_id, vector=embedding,
+                     payload={"user_id": event.user_id, "event_type": event.event_type},
+                     ttl=900)
+    return False
