@@ -1,0 +1,7 @@
+{
+  "event_id":    "evt_a1b2c3",
+  "verdict":     "NOW",
+  "reason_code": "RULE_FORCED_NOW",
+  "reason_text": "Event type 'order_shipped' matched rule 'transactional_always_now'",
+  "deliver_at":  null
+}
