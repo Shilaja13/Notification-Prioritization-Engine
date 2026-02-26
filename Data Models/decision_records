@@ -1,0 +1,15 @@
+CREATE TABLE decision_records (
+  decision_id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id          UUID REFERENCES notification_events(event_id),
+  verdict           VARCHAR(8) NOT NULL CHECK (verdict IN ('NOW','LATER','NEVER')),
+  reason_code       VARCHAR(64) NOT NULL,   -- machine-readable (see Reason Codes)
+  reason_text       TEXT NOT NULL,          -- human-readable explanation
+  rule_ids_matched  TEXT[],                 -- which rules fired
+  ai_score          JSONB,                  -- { urgency, relevance, composite } or null
+  pipeline_trace    JSONB,                  -- [{stage, result, latency_ms}]
+  decided_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  deliver_at        TIMESTAMPTZ             -- populated for LATER verdicts
+);
+
+CREATE INDEX idx_decisions_event ON decision_records (event_id);
+CREATE INDEX idx_decisions_time  ON decision_records (decided_at DESC);
