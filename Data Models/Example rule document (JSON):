@@ -1,0 +1,11 @@
+{
+  "rule_id": "r_security_always_now",
+  "name": "security_alert_critical_override",
+  "scope": "global",
+  "conditions": {
+    "event_type": ["security_alert", "account_breach", "password_reset"],
+    "priority_hint": ["CRITICAL", "HIGH"]
+  },
+  "action": "FORCE_NOW",
+  "priority": 1
+}
