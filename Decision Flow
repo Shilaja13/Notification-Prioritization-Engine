@@ -1,0 +1,48 @@
+INCOMING EVENT
+      │
+      ▼
+┌─────────────────────────────────────────────────────────┐
+│  LAYER 1 — Hard Rules (deterministic, fastest)          │
+│                                                         │
+│  event_type in CRITICAL_ALWAYS_SEND?  ──────────► NOW   │
+│  event_type in NEVER_SEND list?       ──────────► NEVER │
+│  expires_at < now?                    ──────────► NEVER │
+└─────────────────────────┬───────────────────────────────┘
+                          │ (no match)
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  LAYER 2 — Deduplication                                │
+│                                                         │
+│  hash(user_id+event_type+message) in Redis?  ──► NEVER  │
+│  cosine_similarity(embedding) > 0.92?        ──► NEVER  │
+└─────────────────────────┬───────────────────────────────┘
+                          │ (unique)
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  LAYER 3 — Fatigue & Quota                              │
+│                                                         │
+│  daily_count ≥ max_daily_cap?         ──────────► NEVER │
+│  channel_burst > M in 5 min?          ──────────► LATER │
+│  in DND window?                       ──────────► LATER │
+│  noisy period (>K notifs/30min)?                        │
+│    + priority LOW/PROMO?              ──────────► NEVER │
+└─────────────────────────┬───────────────────────────────┘
+                          │ (quota ok)
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  LAYER 4 — AI Scoring (borderline events only)          │
+│                                                         │
+│  P = 0.45×urgency + 0.30×relevance                      │
+│      + 0.15×recency_penalty + 0.10×channel_weight       │
+│                                                         │
+│  P ≥ 0.75  ────────────────────────────────────► NOW    │
+│  0.40 ≤ P < 0.75  ─────────────────────────────► LATER  │
+│  P < 0.40  ────────────────────────────────────► NEVER  │
+└─────────────────────────┬───────────────────────────────┘
+                          │ (AI unavailable)
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  LAYER 5 — Default Fallback                             │
+│                                                         │
+│  Unresolved after all layers  ─────────────────► LATER  │
+└─────────────────────────────────────────────────────────┘
