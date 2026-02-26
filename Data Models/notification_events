@@ -1,0 +1,16 @@
+CREATE TABLE notification_events (
+  event_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         VARCHAR(128) NOT NULL,
+  event_type      VARCHAR(64)  NOT NULL,   -- 'security_alert', 'promo', 'message', etc.
+  source          VARCHAR(64),             -- originating service
+  priority_hint   VARCHAR(16),             -- 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+  channel         VARCHAR(16) NOT NULL,    -- 'push' | 'email' | 'sms' | 'in_app'
+  title           TEXT,
+  message         TEXT NOT NULL,
+  metadata        JSONB,                   -- context-specific fields
+  dedupe_key      VARCHAR(256),            -- optional, may be unreliable
+  expires_at      TIMESTAMPTZ,
+  received_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_events_user_time ON notification_events (user_id, received_at DESC);
