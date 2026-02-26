@@ -1,0 +1,13 @@
+def check_channel_burst(user_id: str, channel: str) -> bool:
+    key = f"fatigue:{user_id}:{channel}:burst"
+    now_ms = time.time() * 1000
+    window_ms = 5 * 60 * 1000   # 5 minutes
+
+    pipe = redis.pipeline()
+    pipe.zremrangebyscore(key, 0, now_ms - window_ms)   # remove old
+    pipe.zadd(key, {str(now_ms): now_ms})               # add current
+    pipe.zcard(key)                                      # count
+    pipe.expire(key, 600)
+    _, _, count, _ = pipe.execute()
+
+    return count > BURST_LIMIT   # True = suppress
